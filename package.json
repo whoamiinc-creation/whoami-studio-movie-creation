@@ -7,23 +7,31 @@
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.457",
+    "@remotion/tailwind-v4": "4.0.457",
+    "dotenv": "^17.4.2",
+    "googleapis": "^105.0.0",
+    "open": "^8.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.457",
-    "@remotion/tailwind-v4": "4.0.457",
     "tailwindcss": "4.0.0"
   },
   "devDependencies": {
     "@remotion/eslint-config-flat": "4.0.457",
+    "@types/node": "^25.6.0",
     "@types/react": "19.2.7",
     "@types/web": "0.0.166",
     "eslint": "9.19.0",
     "prettier": "3.8.1",
+    "ts-node": "^10.9.2",
     "typescript": "5.9.3"
   },
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion bundle",
+    "generate-audio": "node scripts/generate-audio.js",
+    "render": "remotion render MyComp out/video.mp4",
+    "upload": "node scripts/upload-youtube.js",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"
   },

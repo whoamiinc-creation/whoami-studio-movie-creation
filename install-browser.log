@@ -1,0 +1,14 @@
+Downloading Chrome Headless Shell https://www.remotion.dev/chrome-headless-shell
+Customize this behavior by adding a onBrowserDownload function to ensureBrowser().
+Downloading from: https://storage.googleapis.com/chrome-for-testing-public/149.0.7790.0/mac-arm64/chrome-headless-shell-mac-arm64.zip
+Downloading Chrome Headless Shell - 9.5 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 19.1 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 28.6 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 38.2 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 47.7 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 57.3 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 66.8 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 76.4 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 85.9 Mb/93.5 Mb
+Downloading Chrome Headless Shell - 93.5 Mb/93.5 Mb
+Browser ready: {"path":"/Users/sonobekenta/Desktop/whoami-inc/movie/.remotion/chrome-headless-shell/mac-arm64/chrome-headless-shell-mac-arm64/chrome-headless-shell","type":"local-puppeteer-browser"}

@@ -1,0 +1,45 @@
+name: Daily YouTube Upload
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 毎日 00:00 UTC = 09:00 JST
+  workflow_dispatch:       # 手動実行ボタンも有効化
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q google-chrome-stable
+
+      - name: Write credentials
+        run: |
+          echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
+          echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
+          echo '${{ secrets.YOUTUBE_TOKEN }}' > .youtube-token.json
+
+      - name: Generate audio
+        run: node scripts/generate-audio.js $(date +%Y-%m-%d)
+
+      - name: Render video
+        run: |
+          npx remotion render src/index.ts MyComp out/video.mp4 \
+            --browser-executable=$(which google-chrome-stable) \
+            --props "{\"seed\":\"$(date +%Y-%m-%d)\"}"
+
+      - name: Upload to YouTube
+        run: node scripts/upload-youtube.js

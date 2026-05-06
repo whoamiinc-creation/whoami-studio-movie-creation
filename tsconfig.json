@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
+    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
     "target": "ES2018",
-    "module": "commonjs",
-    "jsx": "react-jsx",
     "strict": true,
-    "noEmit": true,
-    "lib": ["es2015"],
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true
+    "jsx": "react-jsx",
+    "allowJs": false,
+    "noEmit": true,
+    "skipLibCheck": true
   },
-  "exclude": ["remotion.config.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "scripts"]
 }
