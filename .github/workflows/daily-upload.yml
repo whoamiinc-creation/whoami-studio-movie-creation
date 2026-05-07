@@ -2,7 +2,7 @@ name: Daily YouTube Upload
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 毎日 00:00 UTC = 09:00 JST
+    - cron: '0 8 * * *'  # 毎日 08:00 UTC = 17:00 JST
   workflow_dispatch:       # 手動実行ボタンも有効化
 
 jobs:
