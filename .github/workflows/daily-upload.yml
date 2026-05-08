@@ -3,7 +3,7 @@ name: Daily YouTube Upload
 on:
   schedule:
     - cron: '0 8 * * *'  # 毎日 08:00 UTC = 17:00 JST
-  workflow_dispatch:       # 手動実行ボタンも有効化
+  workflow_dispatch:
 
 jobs:
   upload:
@@ -32,14 +32,21 @@ jobs:
           echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
           echo '${{ secrets.YOUTUBE_TOKEN }}' > .youtube-token.json
 
+      - name: Generate content (type + AI quote)
+        run: node scripts/generate-content.js $(date +%Y-%m-%d)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
       - name: Generate audio
         run: node scripts/generate-audio.js $(date +%Y-%m-%d)
 
       - name: Render video
         run: |
-          npx remotion render src/index.ts MyComp out/video.mp4 \
+          COMP_ID=$(node -e "console.log(require('./content.json').compositionId)")
+          PROPS=$(node -e "process.stdout.write(JSON.stringify(require('./content.json').props))")
+          npx remotion render src/index.ts "$COMP_ID" out/video.mp4 \
             --browser-executable=$(which google-chrome-stable) \
-            --props "{\"seed\":\"$(date +%Y-%m-%d)\"}"
+            --props "$PROPS"
 
       - name: Upload to YouTube
         run: node scripts/upload-youtube.js

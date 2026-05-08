@@ -3,3 +3,4 @@ dist
 .env
 out/
 .youtube-token.json
+content.json

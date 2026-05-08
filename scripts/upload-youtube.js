@@ -8,9 +8,13 @@ const url  = require('url');
 const qs   = require('querystring');
 
 // ── Config ────────────────────────────────────────────────
-const ENV_PATH   = path.join(__dirname, '../.env');
-const TOKEN_PATH = path.join(__dirname, '../.youtube-token.json');
-const VIDEO_PATH = path.join(__dirname, '../out/video.mp4');
+const ENV_PATH      = path.join(__dirname, '../.env');
+const TOKEN_PATH    = path.join(__dirname, '../.youtube-token.json');
+const VIDEO_PATH    = path.join(__dirname, '../out/video.mp4');
+const CONTENT_PATH  = path.join(__dirname, '../content.json');
+
+// Load content.json if present
+const content = fs.existsSync(CONTENT_PATH) ? JSON.parse(fs.readFileSync(CONTENT_PATH, 'utf-8')) : null;
 const PORT = 3000;
 const REDIRECT_URI = 'http://localhost:3000/oauth2callback';
 const SCOPES = 'https://www.googleapis.com/auth/youtube.upload';
@@ -145,11 +149,16 @@ function uploadVideo(accessToken) {
     const fileSize = fs.statSync(VIDEO_PATH).size;
     console.log(`\nアップロード中: ${(fileSize / 1024 / 1024).toFixed(1)} MB`);
 
+    const title = content?.title
+      ?? 'AIが加速する時代に"自分"が見出せない方へ #geometric #animation #abstract  #ai';
+    const description = content?.description
+      ?? 'AIが加速する時代に"自分"が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\nAbstract geometric animation. #Shorts #geometric #animation #abstract  #ai';
+
     const metadata = JSON.stringify({
       snippet: {
-        title: 'AIが加速する時代に"自分"が見出せない方へ #geometric #animation #abstract  #ai',
-        description: 'AIが加速する時代に"自分"が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\nAbstract geometric animation. #Shorts #geometric #animation #abstract  #ai',
-        tags: ['Shorts', '作業用BGM', 'ADHD', '集中力', '幾何学', 'アニメーション', '癒し', 'ambient', 'lofi', 'バイノーラルビート', 'geometric', 'abstract', 'relaxing', 'focus', '目に優しい'],
+        title,
+        description,
+        tags: ['Shorts', 'ai', '自己発見', 'whoami', '幾何学', 'animation', 'abstract', 'geometric', '癒し', 'ambient'],
         categoryId: '22',
       },
       status: { privacyStatus: 'public' },
