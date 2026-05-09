@@ -21,10 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chrome
+      - name: Install Chrome and Japanese fonts
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q google-chrome-stable
+          sudo apt-get install -y -q google-chrome-stable fonts-noto-cjk
 
       - name: Write credentials
         run: |

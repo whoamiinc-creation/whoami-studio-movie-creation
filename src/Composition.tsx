@@ -417,12 +417,10 @@ export const MyComposition: React.FC<{ seed?: string }> = ({ seed }) => {
         <SweepingLine frame={frame} cx={cx} cy={topCy} length={u*0.40} startFrame={180} endFrame={760} speed={1.2}  color={c1} globalOpacity={globalOpacity * 0.45} />
         <SweepingLine frame={frame} cx={cx} cy={botCy} length={u*0.40} startFrame={220} endFrame={750} speed={-1.0} color={c3} globalOpacity={globalOpacity * 0.45} />
 
-        {/* Spring rects */}
-        <SpringRect frame={frame} fps={fps} cx={cx} cy={cy} w={u*0.44} h={u*0.44} delay={300} color={c0}              globalOpacity={rectOpacity} />
-        <SpringRect frame={frame} fps={fps} cx={cx} cy={cy} w={u*0.88} h={u*0.88} delay={340} color={c1}              globalOpacity={rectOpacity * 0.7} />
-        <SpringRect frame={frame} fps={fps} cx={cx} cy={cy} w={u*1.28} h={u*1.28} delay={380} color={c2}              globalOpacity={rectOpacity * 0.4} />
-        <SpringRect frame={frame} fps={fps} cx={cx} cy={topCy} w={u*0.22} h={u*0.22} delay={350} color={c3} globalOpacity={rectOpacity} />
-        <SpringRect frame={frame} fps={fps} cx={cx} cy={botCy} w={u*0.22} h={u*0.22} delay={370} color={c2} globalOpacity={rectOpacity} />
+        {/* Extra star polygons (replace rects) */}
+        <StarPolygon frame={frame} fps={fps} cx={cx} cy={cx} outerR={u*0.68} innerR={u*0.52} pts={mandalaSides} rotSpeed={0.07} color={c3} delay={300} globalOpacity={rectOpacity * 0.5} />
+        <StarPolygon frame={frame} fps={fps} cx={cx} cy={topCy} outerR={u*0.14} innerR={u*0.07} pts={4} rotSpeed={0.35} color={c0} delay={340} globalOpacity={rectOpacity} />
+        <StarPolygon frame={frame} fps={fps} cx={cx} cy={botCy} outerR={u*0.14} innerR={u*0.07} pts={4} rotSpeed={-0.30} color={c2} delay={360} globalOpacity={rectOpacity} />
       </svg>
 
       <Audio src={staticFile("ambient.wav")} volume={0.7} />
