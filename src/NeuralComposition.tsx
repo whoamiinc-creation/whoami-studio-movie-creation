@@ -1,7 +1,8 @@
 import {
   AbsoluteFill, Audio, interpolate, spring, staticFile,
-  useCurrentFrame, useMemo, useVideoConfig,
+  useCurrentFrame, useVideoConfig,
 } from "remotion";
+import { useMemo } from "react";
 
 function makePRNG(seed: number) {
   let s = seed >>> 0;
@@ -91,7 +92,7 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
       <svg width={width} height={height} style={{ position: "absolute" }}>
 
         {/* Edges */}
-        {edges.map((e, i) => {
+        {edges.map((e: { from: number; to: number; dist: number; color: string; pulseOffset: number }, i: number) => {
           const n0 = nodes[e.from], n1 = nodes[e.to];
           const fadeIn = interpolate(frame, [i % 60, (i % 60) + 50], [0, 1], {
             extrapolateLeft: "clamp", extrapolateRight: "clamp",
@@ -125,7 +126,7 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
         })}
 
         {/* Nodes */}
-        {nodes.map((n, i) => {
+        {nodes.map((n: { x: number; y: number; phase: number; pulseSpeed: number; color: string; size: number }, i: number) => {
           const pulse = (Math.sin(frame * n.pulseSpeed + n.phase) + 1) / 2;
           const r = n.size * (0.7 + 0.3 * pulse);
           const glow = 6 + 8 * pulse;
