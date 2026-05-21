@@ -50,3 +50,15 @@ jobs:
 
       - name: Upload to YouTube
         run: node scripts/upload-youtube.js
+
+      - name: Save refreshed token back to GitHub Secrets
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -f .youtube-token.json ]; then
+            gh secret set YOUTUBE_TOKEN \
+              --repo whoamiinc-creation/whoami-studio-movie-creation \
+              --body "$(cat .youtube-token.json)"
+            echo "YOUTUBE_TOKEN updated."
+          fi
