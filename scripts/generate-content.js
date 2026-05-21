@@ -78,37 +78,65 @@ function generateQuoteWithAI() {
   });
 }
 
-// ── Day-of-year helper ─────────────────────────────────────
-function getDayOfYear(dateStr) {
-  const d = new Date(dateStr);
-  const start = new Date(d.getFullYear(), 0, 0);
-  return Math.floor((d - start) / 86400000);
+// ── Type configs ───────────────────────────────────────────
+const TYPES = [
+  {
+    id: 'GeometricComp',
+    name: 'Geometric',
+    weight: 3, // 出現頻度（相対的な重み）
+    title: () => 'AIが加速する時代に”自分”が見出せない方へ #geometric #animation #abstract  #ai',
+    props: (date) => ({ seed: date }),
+  },
+  {
+    id: 'QuoteComp',
+    name: 'Quote',
+    weight: 3,
+    title: (quote) => {
+      const t = quote.length > 40 ? quote.slice(0, 40) + '…' : quote;
+      return `${t} #ai #shorts #自己発見`;
+    },
+    props: (date, quote) => ({ seed: date, quote, attribution: 'whoami studio' }),
+  },
+  {
+    id: 'WaveComp',
+    name: 'Wave',
+    weight: 2,
+    title: () => '脳波のように揺れる幾何学 #geometric #wave #animation #ai  #shorts',
+    props: (date) => ({ seed: date }),
+  },
+  {
+    id: 'NeuralComp',
+    name: 'Neural',
+    weight: 2,
+    title: () => 'AIが見る世界 — ニューラルネットワーク可視化 #ai #neural #shorts',
+    props: (date) => ({ seed: date }),
+  },
+];
+
+// Weighted random pick using seeded PRNG
+function pickType(rng) {
+  const total = TYPES.reduce((s, t) => s + t.weight, 0);
+  let roll = rng() * total;
+  for (const t of TYPES) {
+    roll -= t.weight;
+    if (roll <= 0) return t;
+  }
+  return TYPES[0];
 }
 
 // ── Main ──────────────────────────────────────────────────
 async function main() {
   const dateStr = process.argv[2] || new Date().toISOString().slice(0, 10);
   const rng = makePRNG(dateSeed(dateStr));
-  const dayOfYear = getDayOfYear(dateStr);
 
-  // Alternate: even=Geometric, odd=Quote
-  const isQuoteDay = dayOfYear % 2 !== 0;
+  const DESCRIPTION = 'AIが加速する時代に”自分”が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\nAbstract geometric animation. #Shorts #geometric #animation #abstract  #ai';
 
-  const DESCRIPTION = 'AIが加速する時代に“自分”が見出せない方はこちら⬇︎︎\nhttps://whoami-studio.com\n\nAbstract geometric animation. #Shorts #geometric #animation #abstract  #ai';
+  const type = pickType(rng);
+  console.log(`[${dateStr}] Type: ${type.name} (${type.id})`);
 
   let content;
 
-  if (!isQuoteDay) {
-    console.log(`[${dateStr}] Type: Geometric`);
-    content = {
-      compositionId: 'GeometricComp',
-      title: 'AIが加速する時代に“自分”が見出せない方へ #geometric #animation #abstract  #ai',
-      description: DESCRIPTION,
-      props: { seed: dateStr },
-    };
-  } else {
-    console.log(`[${dateStr}] Type: Quote`);
-
+  if (type.id === 'QuoteComp') {
     let quote;
     if (process.env.OPENAI_API_KEY) {
       try {
@@ -123,14 +151,18 @@ async function main() {
       quote = FALLBACK_QUOTES[Math.floor(rng() * FALLBACK_QUOTES.length)];
       console.log('Quote (fallback):', quote);
     }
-
-    // Title: quote shortened to 60 chars max
-    const titleQuote = quote.length > 40 ? quote.slice(0, 40) + '…' : quote;
     content = {
-      compositionId: 'QuoteComp',
-      title: `${titleQuote} #ai #shorts #自己発見`,
+      compositionId: type.id,
+      title: type.title(quote),
       description: DESCRIPTION,
-      props: { seed: dateStr, quote, attribution: 'whoami studio' },
+      props: type.props(dateStr, quote),
+    };
+  } else {
+    content = {
+      compositionId: type.id,
+      title: type.title(),
+      description: DESCRIPTION,
+      props: type.props(dateStr),
     };
   }
 
