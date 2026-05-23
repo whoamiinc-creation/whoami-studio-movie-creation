@@ -3,4 +3,5 @@ dist
 .env
 out/
 .youtube-token.json
+.tiktok-token.json
 content.json

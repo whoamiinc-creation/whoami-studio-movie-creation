@@ -1,4 +1,4 @@
-name: Daily YouTube Upload
+name: Daily Upload (YouTube + TikTok + Instagram)
 
 on:
   schedule:
@@ -8,7 +8,7 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,12 @@ jobs:
         run: |
           echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
           echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
+          echo "TIKTOK_CLIENT_KEY=${{ secrets.TIKTOK_CLIENT_KEY }}" >> .env
+          echo "TIKTOK_CLIENT_SECRET=${{ secrets.TIKTOK_CLIENT_SECRET }}" >> .env
           echo '${{ secrets.YOUTUBE_TOKEN }}' > .youtube-token.json
+          if [ -n '${{ secrets.TIKTOK_TOKEN }}' ]; then
+            echo '${{ secrets.TIKTOK_TOKEN }}' > .tiktok-token.json
+          fi
 
       - name: Generate content (type + AI quote)
         run: node scripts/generate-content.js $(date +%Y-%m-%d)
@@ -51,7 +56,21 @@ jobs:
       - name: Upload to YouTube
         run: node scripts/upload-youtube.js
 
-      - name: Save refreshed token back to GitHub Secrets
+      - name: Upload to TikTok
+        continue-on-error: true
+        if: ${{ secrets.TIKTOK_TOKEN != '' }}
+        run: node scripts/upload-tiktok.js
+
+      - name: Upload to Instagram
+        continue-on-error: true
+        if: ${{ secrets.INSTAGRAM_ACCESS_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+        run: node scripts/upload-instagram.js
+
+      - name: Save refreshed tokens to GitHub Secrets
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -61,4 +80,10 @@ jobs:
               --repo whoamiinc-creation/whoami-studio-movie-creation \
               --body "$(cat .youtube-token.json)"
             echo "YOUTUBE_TOKEN updated."
+          fi
+          if [ -f .tiktok-token.json ]; then
+            gh secret set TIKTOK_TOKEN \
+              --repo whoamiinc-creation/whoami-studio-movie-creation \
+              --body "$(cat .tiktok-token.json)"
+            echo "TIKTOK_TOKEN updated."
           fi
