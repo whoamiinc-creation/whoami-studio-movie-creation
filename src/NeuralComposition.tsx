@@ -17,15 +17,17 @@ function makePRNG(seed: number) {
 function dateSeed(str: string): number {
   return Array.from(str).reduce((a, c) => (Math.imul(a, 31) + c.charCodeAt(0)) | 0, 0x811c9dc5);
 }
+
 const PALETTES = [
   ["#00f5ff", "#bf00ff", "#ff0080", "#0040ff"],
   ["#00ff88", "#ff6600", "#ffee00", "#00aaff"],
   ["#ff69b4", "#da70d6", "#e0e0ff", "#7b68ee"],
   ["#39ff14", "#ff073a", "#ff9f00", "#bc13fe"],
+  ["#00ffff", "#ff00ff", "#00ff88", "#ff4500"],
+  ["#e040fb", "#7c4dff", "#40c4ff", "#69f0ae"],
+  ["#ffd700", "#ff4081", "#00e5ff", "#76ff03"],
+  ["#ff6e40", "#ffd740", "#40ffd7", "#448aff"],
 ];
-
-const NODE_COUNT   = 42;
-const MAX_EDGE_DIST = 320;
 
 export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
   const frame = useCurrentFrame();
@@ -35,28 +37,29 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
   const rng = makePRNG(dateSeed(seedStr));
 
   const palette = PALETTES[Math.floor(rng() * PALETTES.length)];
-  const [c0, c1, c2, c3] = palette;
+  const [c0, c1] = palette;
+
+  // Seeded node count and edge distance for daily variety
+  const NODE_COUNT    = 32 + Math.floor(rng() * 26);   // 32–57
+  const MAX_EDGE_DIST = 240 + Math.floor(rng() * 160);  // 240–400
 
   // Seeded node layout (stable across frames)
   const nodes = useMemo(() => {
-    const r2 = makePRNG(dateSeed(seedStr));
-    // Skip palette pick
-    r2(); r2(); r2(); r2(); r2();
-    return Array.from({ length: NODE_COUNT }, (_, i) => {
+    const r2 = makePRNG(dateSeed(seedStr + "nodes"));
+    return Array.from({ length: NODE_COUNT }, () => {
       const margin = 80;
-      // Bias toward center for portrait
-      const x = margin + r2() * (width - margin * 2);
+      const x = margin + r2() * (width  - margin * 2);
       const y = margin + r2() * (height - margin * 2);
       return {
         x, y,
         phase:      r2() * Math.PI * 2,
-        pulseSpeed: 0.035 + r2() * 0.045,
-        color:      palette[Math.floor(r2() * 4)],
-        size:       3 + r2() * 7,
+        pulseSpeed: 0.030 + r2() * 0.055,
+        color:      palette[Math.floor(r2() * palette.length)],
+        size:       3 + r2() * 8,
       };
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seedStr, width, height]);
+  }, [seedStr, width, height, NODE_COUNT]);
 
   // Edges between nearby nodes
   const edges = useMemo(() => {
@@ -70,7 +73,7 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
         if (dist < MAX_EDGE_DIST) {
           result.push({
             from: i, to: j, dist,
-            color: palette[Math.floor(r3() * 4)],
+            color: palette[Math.floor(r3() * palette.length)],
             pulseOffset: r3() * 300,
           });
         }
@@ -78,7 +81,7 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
     }
     return result;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, seedStr]);
+  }, [nodes, seedStr, MAX_EDGE_DIST]);
 
   const globalOpacity =
     frame < 60
@@ -98,21 +101,17 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
             extrapolateLeft: "clamp", extrapolateRight: "clamp",
           });
           const baseAlpha = (1 - e.dist / MAX_EDGE_DIST) * 0.45;
-
-          // Traveling pulse: dashoffset scrolls along the edge
-          const dash = e.dist * 0.25;
-          const gap  = e.dist * 0.75;
+          const dash   = e.dist * 0.25;
+          const gap    = e.dist * 0.75;
           const offset = e.dist - ((frame * 5 + e.pulseOffset) % e.dist);
 
           return (
             <g key={`e${i}`}>
-              {/* Static dim edge */}
               <line
                 x1={n0.x} y1={n0.y} x2={n1.x} y2={n1.y}
                 stroke={e.color} strokeWidth={0.6}
                 opacity={globalOpacity * baseAlpha * fadeIn}
               />
-              {/* Traveling pulse */}
               <line
                 x1={n0.x} y1={n0.y} x2={n1.x} y2={n1.y}
                 stroke={e.color} strokeWidth={1.5}
@@ -155,7 +154,6 @@ export const NeuralComposition: React.FC<{ seed?: string }> = ({ seed }) => {
 
       </svg>
 
-      {/* Label */}
       <div style={{
         position: "absolute", bottom: "12%", left: 0, right: 0, textAlign: "center",
         opacity: interpolate(frame, [90, 150], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) * globalOpacity,

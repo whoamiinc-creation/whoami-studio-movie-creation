@@ -78,37 +78,52 @@ function generateQuoteWithAI() {
   });
 }
 
+// ── Unified title & description ────────────────────────────
+const UNIFIED_TITLE       = 'AIが加速する時代に”自分”が見出せない方へ #shorts #ai #abstract #animation';
+const UNIFIED_DESCRIPTION = 'AIが加速する時代に”自分”が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\n#Shorts #ai #abstract #animation #geometric';
+
 // ── Type configs ───────────────────────────────────────────
 const TYPES = [
   {
     id: 'GeometricComp',
     name: 'Geometric',
-    weight: 3, // 出現頻度（相対的な重み）
-    title: () => 'AIが加速する時代に”自分”が見出せない方へ #geometric #animation #abstract  #ai',
+    weight: 2,
     props: (date) => ({ seed: date }),
   },
   {
     id: 'QuoteComp',
     name: 'Quote',
-    weight: 3,
-    title: (quote) => {
-      const t = quote.length > 40 ? quote.slice(0, 40) + '…' : quote;
-      return `${t} #ai #shorts #自己発見`;
-    },
+    weight: 2,
     props: (date, quote) => ({ seed: date, quote, attribution: 'whoami studio' }),
   },
   {
     id: 'WaveComp',
     name: 'Wave',
     weight: 2,
-    title: () => '脳波のように揺れる幾何学 #geometric #wave #animation #ai  #shorts',
     props: (date) => ({ seed: date }),
   },
   {
     id: 'NeuralComp',
     name: 'Neural',
+    weight: 3,
+    props: (date) => ({ seed: date }),
+  },
+  {
+    id: 'FlowFieldComp',
+    name: 'FlowField',
     weight: 2,
-    title: () => 'AIが見る世界 — ニューラルネットワーク可視化 #ai #neural #shorts',
+    props: (date) => ({ seed: date }),
+  },
+  {
+    id: 'MandalaComp',
+    name: 'Mandala',
+    weight: 2,
+    props: (date) => ({ seed: date }),
+  },
+  {
+    id: 'CrystalComp',
+    name: 'Crystal',
+    weight: 2,
     props: (date) => ({ seed: date }),
   },
 ];
@@ -128,8 +143,6 @@ function pickType(rng) {
 async function main() {
   const dateStr = process.argv[2] || new Date().toISOString().slice(0, 10);
   const rng = makePRNG(dateSeed(dateStr));
-
-  const DESCRIPTION = 'AIが加速する時代に”自分”が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\nAbstract geometric animation. #Shorts #geometric #animation #abstract  #ai';
 
   const type = pickType(rng);
   console.log(`[${dateStr}] Type: ${type.name} (${type.id})`);
@@ -153,15 +166,15 @@ async function main() {
     }
     content = {
       compositionId: type.id,
-      title: type.title(quote),
-      description: DESCRIPTION,
+      title: UNIFIED_TITLE,
+      description: UNIFIED_DESCRIPTION,
       props: type.props(dateStr, quote),
     };
   } else {
     content = {
       compositionId: type.id,
-      title: type.title(),
-      description: DESCRIPTION,
+      title: UNIFIED_TITLE,
+      description: UNIFIED_DESCRIPTION,
       props: type.props(dateStr),
     };
   }

@@ -3,6 +3,9 @@ import { MyComposition } from "./Composition";
 import { QuoteComposition } from "./QuoteComposition";
 import { WaveComposition } from "./WaveComposition";
 import { NeuralComposition } from "./NeuralComposition";
+import { FlowFieldComposition } from "./FlowFieldComposition";
+import { MandalaComposition } from "./MandalaComposition";
+import { CrystalComposition } from "./CrystalComposition";
 
 const today = new Date().toISOString().slice(0, 10);
 
@@ -19,6 +22,15 @@ export const RemotionRoot: React.FC = () => {
         durationInFrames={900} fps={30} width={1080} height={1920}
         defaultProps={{ seed: today }} />
       <Composition id="NeuralComp" component={NeuralComposition}
+        durationInFrames={900} fps={30} width={1080} height={1920}
+        defaultProps={{ seed: today }} />
+      <Composition id="FlowFieldComp" component={FlowFieldComposition}
+        durationInFrames={900} fps={30} width={1080} height={1920}
+        defaultProps={{ seed: today }} />
+      <Composition id="MandalaComp" component={MandalaComposition}
+        durationInFrames={900} fps={30} width={1080} height={1920}
+        defaultProps={{ seed: today }} />
+      <Composition id="CrystalComp" component={CrystalComposition}
         durationInFrames={900} fps={30} width={1080} height={1920}
         defaultProps={{ seed: today }} />
     </>
