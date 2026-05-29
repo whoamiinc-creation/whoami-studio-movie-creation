@@ -58,12 +58,10 @@ jobs:
 
       - name: Upload to TikTok
         continue-on-error: true
-        if: ${{ secrets.TIKTOK_TOKEN != '' }}
         run: node scripts/upload-tiktok.js
 
       - name: Upload to Instagram
         continue-on-error: true
-        if: ${{ secrets.INSTAGRAM_ACCESS_TOKEN != '' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
