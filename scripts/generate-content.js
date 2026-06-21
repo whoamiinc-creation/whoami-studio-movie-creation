@@ -80,7 +80,7 @@ function generateQuoteWithAI() {
 
 // ── Unified title & description ────────────────────────────
 const UNIFIED_TITLE       = 'AIが加速する時代に”自分”が見出せない方へ #shorts #ai #abstract #animation';
-const UNIFIED_DESCRIPTION = 'AIが加速する時代に”自分”が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\n#Shorts #ai #abstract #animation #geometric';
+const UNIFIED_DESCRIPTION = 'AIが加速する時代に”自分”が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\n▶ 綾城マキって何者？ 自己紹介はこちら！\nhttps://youtu.be/Xb1p8H5DybE\nAI×システムを“やさしく”解説。チャンネル登録もよろしくね！\n\n#Shorts #ai #abstract #animation #geometric';
 
 // ── Type configs ───────────────────────────────────────────
 const TYPES = [
