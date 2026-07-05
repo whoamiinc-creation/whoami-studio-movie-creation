@@ -2,7 +2,7 @@ name: Daily Upload (YouTube + TikTok + Instagram)
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 毎日 08:00 UTC = 17:00 JST
+    - cron: '0 8 * * 0,4'  # 日曜・木曜 08:00 UTC = 17:00 JST（幾何学模様など抽象動画の頻度を週2回に）
   workflow_dispatch:
 
 jobs:

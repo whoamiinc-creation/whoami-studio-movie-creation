@@ -1,0 +1,93 @@
+name: Revenue Shorts Upload (every 3 days, 09:00 JST)
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *'  # 3日おき 00:00 UTC = 09:00 JST（revenue/queue.json を先頭から順番に1本ずつ）
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write   # revenue/state.json を投稿後にコミット＆pushするため
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare next revenue short
+        id: prepare
+        run: |
+          set +e
+          node scripts/revenue-prepare.js
+          code=$?
+          if [ "$code" -eq 3 ]; then
+            echo "queue_empty=true" >> "$GITHUB_OUTPUT"   # 全部投稿済み → 以降スキップ
+            exit 0
+          fi
+          [ "$code" -ne 0 ] && exit "$code"
+          echo "queue_empty=false" >> "$GITHUB_OUTPUT"
+
+      - name: Write credentials
+        if: steps.prepare.outputs.queue_empty == 'false'
+        run: |
+          echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
+          echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
+          echo "TIKTOK_CLIENT_KEY=${{ secrets.TIKTOK_CLIENT_KEY }}" >> .env
+          echo "TIKTOK_CLIENT_SECRET=${{ secrets.TIKTOK_CLIENT_SECRET }}" >> .env
+          echo '${{ secrets.YOUTUBE_TOKEN }}' > .youtube-token.json
+          if [ -n '${{ secrets.TIKTOK_TOKEN }}' ]; then
+            echo '${{ secrets.TIKTOK_TOKEN }}' > .tiktok-token.json
+          fi
+
+      - name: Upload to YouTube
+        if: steps.prepare.outputs.queue_empty == 'false'
+        run: node scripts/upload-youtube.js
+
+      - name: Upload to TikTok
+        if: steps.prepare.outputs.queue_empty == 'false'
+        continue-on-error: true
+        run: node scripts/upload-tiktok.js
+
+      - name: Upload to Instagram
+        if: steps.prepare.outputs.queue_empty == 'false'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+        run: node scripts/upload-instagram.js
+
+      - name: Advance queue & commit state
+        if: steps.prepare.outputs.queue_empty == 'false'
+        run: |
+          node -e "const fs=require('fs');const p='revenue/state.json';const s=JSON.parse(fs.readFileSync(p));s.nextIndex=(s.nextIndex??0)+1;fs.writeFileSync(p,JSON.stringify(s,null,2));console.log('nextIndex =',s.nextIndex);"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add revenue/state.json
+          git commit -m "chore(revenue): advance queue after upload [skip ci]" || echo "no state change"
+          git push
+
+      - name: Save refreshed tokens to GitHub Secrets
+        if: always() && steps.prepare.outputs.queue_empty == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -f .youtube-token.json ]; then
+            gh secret set YOUTUBE_TOKEN \
+              --repo whoamiinc-creation/whoami-studio-movie-creation \
+              --body "$(cat .youtube-token.json)"
+          fi
+          if [ -f .tiktok-token.json ]; then
+            gh secret set TIKTOK_TOKEN \
+              --repo whoamiinc-creation/whoami-studio-movie-creation \
+              --body "$(cat .tiktok-token.json)"
+          fi
