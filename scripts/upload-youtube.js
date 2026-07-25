@@ -154,14 +154,20 @@ function uploadVideo(accessToken) {
     const description = content?.description
       ?? 'AIが加速する時代に"自分"が見出せない方はこちら⤵︎⤵︎\nhttps://whoami-studio.com\n\nAbstract geometric animation. #Shorts #geometric #animation #abstract  #ai';
 
+    // tags / categoryId / privacyStatus も content.json から読む（無ければ従来の抽象動画向け既定値）
+    const tags = content?.tags
+      ?? ['Shorts', 'ai', '自己発見', 'whoami', '幾何学', 'animation', 'abstract', 'geometric', '癒し', 'ambient'];
+    const categoryId = content?.categoryId ?? '22';
+    const privacyStatus = content?.privacyStatus ?? 'public';
+
     const metadata = JSON.stringify({
       snippet: {
         title,
         description,
-        tags: ['Shorts', 'ai', '自己発見', 'whoami', '幾何学', 'animation', 'abstract', 'geometric', '癒し', 'ambient'],
-        categoryId: '22',
+        tags,
+        categoryId,
       },
-      status: { privacyStatus: 'public' },
+      status: { privacyStatus },
     });
 
     const BOUNDARY = '-------314159265358979323846';
