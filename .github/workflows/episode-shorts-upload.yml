@@ -1,13 +1,13 @@
 name: Episode Shorts Upload (YouTube + TikTok + Instagram)
 
 # 綾城マキ 本編エピソードのショートを、キューから1本ずつ自動投稿する。
-# ペース: 日・月・火・水 の 17:00 JST（本編を投稿した"後"の翌日〜4日で a,b,c,d を消化）。
+# ペース: 土・日・水・金 の 18:30 JST（本編を投稿した土曜から Sat→Sun→Wed→Fri で a,b,c,d を消化）。
 # キューが空 or 消化済みなら何も投稿しない（撮り溜め回が先走らない安全設計）。
 # キュー投入は `node scripts/episode-enqueue.js <話数>` をローカルで実行→コミット。
 
 on:
   schedule:
-    - cron: '0 8 * * 0,1,2,3'  # Sun/Mon/Tue/Wed 08:00 UTC = 17:00 JST
+    - cron: '30 9 * * 0,3,5,6'  # Sat/Sun/Wed/Fri 09:30 UTC = 18:30 JST
   workflow_dispatch:
 
 permissions:

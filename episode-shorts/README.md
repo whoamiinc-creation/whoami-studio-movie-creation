@@ -5,8 +5,8 @@ YouTube / TikTok / Instagram に自動投稿する仕組みです。
 従来の抽象動画（幾何学模様など）の `daily-upload.yml` の定期実行は停止し、これに置き換えました。
 
 ## ペース
-- **日・月・火・水 の 17:00 JST** に1本ずつ（`.github/workflows/episode-shorts-upload.yml`）。
-- 本編は土曜など週1で投稿 → その**翌 日〜水の4日で、その回のショート a/b/c/d を消化**する想定。
+- **土・日・水・金 の 18:30 JST** に1本ずつ（`.github/workflows/episode-shorts-upload.yml`）。
+- 本編は土曜に投稿 → その**土曜から Sat→Sun→Wed→Fri の4回で、その回のショート a/b/c/d を消化**する想定。
 - キューが空 or 消化済みなら**何も投稿しない**（撮り溜め回が先走らない安全設計）。
 
 ## 使い方（本編を投稿した"後"に）
