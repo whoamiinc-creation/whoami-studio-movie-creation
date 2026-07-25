@@ -1,16 +1,22 @@
-name: Daily Upload (YouTube + TikTok + Instagram)
+name: Episode Shorts Upload (YouTube + TikTok + Instagram)
+
+# 綾城マキ 本編エピソードのショートを、キューから1本ずつ自動投稿する。
+# ペース: 土・日・水・金 の 18:30 JST（本編を投稿した土曜から Sat→Sun→Wed→Fri で a,b,c,d を消化）。
+# キューが空 or 消化済みなら何も投稿しない（撮り溜め回が先走らない安全設計）。
+# キュー投入は `node scripts/episode-enqueue.js <話数>` をローカルで実行→コミット。
 
 on:
-  # 定期実行は停止（2026-07-25）。抽象動画（幾何学模様など）は、本編エピソードのショート自動投稿
-  # （episode-shorts-upload.yml）に置き換えました。抽象動画を手動で出したい時だけ workflow_dispatch。
-  # schedule:
-  #   - cron: '0 8 * * 0,4'  # 旧: 日曜・木曜 17:00 JST
+  schedule:
+    - cron: '30 9 * * 0,3,5,6'  # Sat/Sun/Wed/Fri 09:30 UTC = 18:30 JST
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -23,11 +29,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chrome and Japanese fonts
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q google-chrome-stable fonts-noto-cjk
-
       - name: Write credentials
         run: |
           echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
@@ -39,36 +40,37 @@ jobs:
             echo '${{ secrets.TIKTOK_TOKEN }}' > .tiktok-token.json
           fi
 
-      - name: Generate content (type + AI quote)
-        run: node scripts/generate-content.js $(date +%Y-%m-%d)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Generate audio
-        run: node scripts/generate-audio.js $(date +%Y-%m-%d)
-
-      - name: Render video
-        run: |
-          COMP_ID=$(node -e "console.log(require('./content.json').compositionId)")
-          PROPS=$(node -e "process.stdout.write(JSON.stringify(require('./content.json').props))")
-          npx remotion render src/index.ts "$COMP_ID" out/video.mp4 \
-            --browser-executable=$(which google-chrome-stable) \
-            --props "$PROPS"
+      - name: Prepare next short from queue
+        id: prepare
+        run: node scripts/episode-prepare.js
 
       - name: Upload to YouTube
+        if: steps.prepare.outputs.pending == 'true'
         run: node scripts/upload-youtube.js
 
       - name: Upload to TikTok
+        if: steps.prepare.outputs.pending == 'true'
         continue-on-error: true
         run: node scripts/upload-tiktok.js
 
       - name: Upload to Instagram
+        if: steps.prepare.outputs.pending == 'true'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
           INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
         run: node scripts/upload-instagram.js
+
+      - name: Advance queue pointer and commit
+        if: steps.prepare.outputs.pending == 'true'
+        run: |
+          node -e "const fs=require('fs');const p='episode-shorts/state.json';const s=JSON.parse(fs.readFileSync(p));s.nextIndex=(s.nextIndex||0)+1;fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n');"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add episode-shorts/state.json
+          git commit -m "chore(shorts): advance episode-shorts queue pointer [skip ci]"
+          git push origin HEAD:main
 
       - name: Save refreshed tokens to GitHub Secrets
         if: always()
