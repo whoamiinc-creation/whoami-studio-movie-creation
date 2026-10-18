@@ -68,10 +68,13 @@ function pick(arr) {
 }
 
 // 句読点（、。）をなるべく使わない: 読点/句点を半角スペースに置換して整える（保険）
+// 改行(\n)は本文のレイアウトとして残す。
 function reducePunctuation(s) {
   return String(s)
     .replace(/[、，。．]/g, " ") // 読点・句点 → スペース
-    .replace(/ {2,}/g, " ") // 連続スペースを1つに
+    .replace(/[ \t]{2,}/g, " ") // 連続スペースを1つに（改行は保持）
+    .replace(/[ \t]*\n[ \t]*/g, "\n") // 改行まわりの余分なスペースを除去
+    .replace(/\n{3,}/g, "\n\n") // 3行以上の空行は詰める
     .trim();
 }
 
@@ -141,8 +144,9 @@ ${MAKI_PERSONA}
 
 【本文(text)の条件】
 - 日本語で、40〜110文字程度。X向けの自然な長さ。
-- ★句読点（、。）はなるべく使わない。文の区切りは半角スペースや改行で表現する（X向けの自然な体裁）。
-- ★語尾は必ず絵文字1つで終える（文章の最後が絵文字になるように）。
+- ★句読点（、。）はなるべく使わない。小さな区切りは半角スペースで表現する。
+- ★意味のまとまりごとに改行（\n）を入れて、全体で2〜4行の読みやすい体裁にする（X投稿らしい見た目）。
+- ★語尾は必ず絵文字1つで終える（最終行の最後が絵文字になるように）。
 - 本文の中にハッシュタグやURL、宣伝は入れない。
 - ${count}件は方向性をバラけさせる（ミックス）:
   ・AI/システム/キャリアに関する「ふとした気づき・小ネタ」1〜2件
@@ -229,7 +233,8 @@ function finalizeTweet({ text, hashtag }) {
   const body = ensureEmojiEnding(reducePunctuation(text));
   const properTag = hashtag || "#つぶやき";
   const growthTag = pickGrowthHashtag(properTag);
-  return `${body} ${properTag} ${growthTag}`;
+  // 本文とハッシュタグの間は1行あけて、タグは別行にまとめる（X映えする体裁）
+  return `${body}\n\n${properTag} ${growthTag}`;
 }
 
 async function main() {
