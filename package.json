@@ -10,6 +10,7 @@
     "@remotion/tailwind-v4": "4.0.457",
     "dotenv": "^17.4.2",
     "googleapis": "^105.0.0",
+    "nodemailer": "^10.1.2",
     "open": "^8.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
