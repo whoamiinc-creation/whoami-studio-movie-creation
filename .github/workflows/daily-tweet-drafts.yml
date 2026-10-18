@@ -1,0 +1,34 @@
+name: Daily Tweet Drafts (綾城マキ 朝のツイート下書き)
+
+# 毎朝 7:30 JST に、綾城マキの「何気ないツイート」下書きを3〜4件生成してメール送信する。
+# 挨拶はテンプレ（APIなし）、本文だけ Gemini 無料API を使うのでコストはほぼ¥0。
+# 届いた下書きから気に入ったものを手動でコピペ投稿する運用（X API不要）。
+
+on:
+  schedule:
+    - cron: "30 22 * * *" # 22:30 UTC = 翌 07:30 JST（毎日）
+  workflow_dispatch: {} # 手動テスト実行も可能
+
+jobs:
+  drafts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate and email tweet drafts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_APP_PASSWORD: ${{ secrets.MAIL_APP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: node scripts/generate-tweet-drafts.js
